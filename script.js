@@ -120,7 +120,7 @@ const app = Vue.createApp({
     methods: {
         async loadSongsData() {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/songs.json');
+                const response = await fetch('https://raw.githubusercontent.com/cercadu/filhosDeMariaMinisterioDeMusica/main/songs.json');
                 const data = await response.json();
                 this.publicSongs = data;
 
