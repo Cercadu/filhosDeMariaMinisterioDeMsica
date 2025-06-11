@@ -1,0 +1,152 @@
+body {
+    background-image: url('https://image.winudf.com/v2/image1/amVzdXMuZGlvcy5jYW5jaW9uZXMuY3Jpc3RpYW5hLm9yYWNpb24uYmlibGlhLnJlbGlnaW9uX3NjcmVlbl8wXzE1NDgxNTM0MjhfMDIy/screen-0.jpg?fakeurl=1&type=.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.footer {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    margin-top: auto;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.btn-favorite {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.25rem;
+    color: #6c757d;
+    background: none;
+    border: none;
+    z-index: 2;
+}
+
+.btn-favorite.active {
+    color: #ffc107;
+}
+
+.song-card {
+    cursor: pointer;
+    height: 100%;
+    color: #212529;
+}
+
+.song-card .card-title {
+    font-weight: bold;
+}
+
+.song-card .card-category {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.song-actions {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.chord {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.tablatura, pre {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    color: #212529;
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        background-attachment: scroll;
+    }
+}
+
+.badge {
+    margin-right: 5px;
+}
+
+.dropdown-item.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-edit, .btn-delete {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: #6c757d;
+    z-index: 2;
+}
+
+.btn-edit:hover {
+    color: #007bff;
+}
+
+.btn-delete:hover {
+    color: #dc3545;
+}
+
+.online-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.online-indicator.online {
+    background-color: #28a745;
+}
+
+.online-indicator.offline {
+    background-color: #dc3545;
+}
+
+.badge.bg-primary {
+    margin-left: 5px;
+}
+
+#lastUpdateText {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Adicionais para responsividade */
+@media (max-width: 767px) {
+    .song-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .song-actions a {
+        width: 100%;
+    }
+}
