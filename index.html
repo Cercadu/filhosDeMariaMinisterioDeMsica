@@ -27,7 +27,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="description" content="Pasta Virtual de Cifras - Ministério de Música Filhos de Maria">
 </head>
-<body>
+<body id="app">
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#"><i class="fas fa-music"></i> Cifras - Filhos de Maria</a>
@@ -208,7 +208,7 @@
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js') // Use caminho relativo
+            navigator.serviceWorker.register('./service-worker.js')
                 .then(registration => {
                     console.log('Service Worker registrado com sucesso:', registration);
                 })
@@ -218,5 +218,7 @@
         });
     }
 </script>
+
+
 </body>
 </html>
