@@ -352,6 +352,12 @@ const app = Vue.createApp({
         },
 
         saveNewPersonalSong() {
+            this.newSong.titulo = document.getElementById('songTitle').value;
+            this.newSong.categoria = document.getElementById('songCategory').value;
+            this.newSong.linkCifraClub = document.getElementById('songCifraClub').value;
+            this.newSong.linkLetra = document.getElementById('songLetra').value;
+            this.newSong.conteudo = document.getElementById('songContent').value;
+
             if (!this.newSong.titulo) {
                 alert('Por favor, insira pelo menos o título da música.');
                 return;
@@ -506,7 +512,7 @@ const app = Vue.createApp({
         async checkForUpdates() {
             // Verificar se há atualizações no JSON remoto
             try {
-                const response = await fetch('https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/songs.json', {
+                const response = await fetch('https://raw.githubusercontent.com/cercadu/filhosDeMariaMinisterioDeMusica/main/songs.json', {
                     cache: 'no-store' // Forçar solicitação para o servidor
                 });
 
@@ -558,18 +564,3 @@ const app = Vue.createApp({
         }
     }
 });
-
-// Iniciar o app Vue
-app.mount('#app');
-
-// Função para preenchimento inicial
-(function() {
-    // Inicializar elementos necessários antes do Vue montar
-    const songsListEl = document.createElement('div');
-    songsListEl.id = 'songsList';
-    songsListEl.className = 'row';
-    document.querySelector('.container').appendChild(songsListEl);
-
-    // Adicionar o elemento raiz para o Vue
-    document.body.setAttribute('id', 'app');
-})();
