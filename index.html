@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cifras - Ministério de Música Filhos de Maria</title>
+
+    <!-- Bootstrap e Font Awesome via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDK v9 com módulos -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+
+    <!-- Inicialização do Firebase -->
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZN_g4J5Vi5hmRgt1SdVBS05il7krwY7c",
+            authDomain: "cifras-filhos-de-maria.firebaseapp.com",
+            projectId: "cifras-filhos-de-maria",
+            storageBucket: "cifras-filhos-de-maria.appspot.com",
+            messagingSenderId: "24939847905",
+            appId: "1:24939847905:web:7d621c63b6b6279106d7a0",
+            measurementId: "G-P6LH6Y54P1"
+        };
+
+        // Inicializar Firebase com API de compatibilidade
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+        firebase.analytics();
+    </script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="fas fa-music"></i> Cifras - Filhos de Maria</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-list"></i> Listas
+                    </a>
+                    <ul class="dropdown-menu" id="playlistsDropdown">
+                        <li><a class="dropdown-item" href="#" id="showAllSongs">Todas as Músicas</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Listas Públicas</h6></li>
+                        <!-- As listas públicas serão adicionadas aqui -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Minhas Listas</h6></li>
+                        <!-- As listas pessoais serão adicionadas aqui -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="btnCreatePlaylist">
+                            <i class="fas fa-plus"></i> Nova Lista
+                        </a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="btnFavoritos">
+                        <i class="fas fa-star"></i> Favoritos
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus-circle"></i> Adicionar
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="btnAddSong">
+                            <i class="fas fa-music"></i> Nova Cifra
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" id="btnShowImportJson">
+                            <i class="fas fa-file-import"></i> Importar JSON
+                        </a></li>
+                        <li id="adminSection" class="d-none">
+                            <hr class="dropdown-divider">
+                            <h6 class="dropdown-header">Administração</h6>
+                            <a class="dropdown-item" href="#" id="btnExportSongs">
+                                <i class="fas fa-file-export"></i> Exportar Músicas
+                            </a>
+                            <a class="dropdown-item" href="#" id="btnManageUsers">
+                                <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="btnUserAccount">
+                        <i class="fas fa-user-circle"></i> <span id="userDisplayName">Entrar</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div id="activePlaylistHeader" class="mb-4 d-none">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 id="activePlaylistName">Nome da Lista</h2>
+            <div>
+                <button class="btn btn-outline-light" id="btnEditPlaylist">
+                    <i class="fas fa-edit"></i> Editar Lista
+                </button>
+                <button class="btn btn-outline-light ms-2" id="btnSharePlaylist">
+                    <i class="fas fa-share-alt"></i> Compartilhar
+                </button>
+            </div>
+        </div>
+        <p id="activePlaylistDescription" class="text-light fst-italic"></p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="searchInput" placeholder="Buscar músicas...">
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-filter"></i> Filtrar por categoria
+                </button>
+                <ul class="dropdown-menu" id="categoryDropdown">
+                    <li><a class="dropdown-item active" href="#" data-category="all">Todas as categorias</a></li>
+                    <!-- Categorias serão adicionadas dinamicamente -->
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="online-status">
+                <span id="onlineStatusIndicator" class="online-indicator"></span>
+                <span id="syncStatusText">Sincronizando...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="songsList"></div>
+
+    <!-- Modal para exibir detalhes da música -->
+    <div class="modal fade" id="songDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="songDetailTitle">Título da Música</h5>
+                        <small id="songDetailInfo" class="text-muted">Tom: C | Capotraste: 0</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="autoscroll-controls mb-3 d-flex align-items-center">
+                        <div class="form-check form-switch me-3">
+                            <input class="form-check-input" type="checkbox" id="autoscrollSwitch">
+                            <label class="form-check-label" for="autoscrollSwitch">Rolagem automática</label>
+                        </div>
+                        <div class="d-flex align-items-center ms-3" id="speedControlContainer">
+                            <label for="scrollSpeed" class="form-label me-2 mb-0">Velocidade:</label>
+                            <input type="range" class="form-range" min="1" max="10" value="5" id="scrollSpeed" style="width: 100px;">
+                            <span id="scrollSpeedValue" class="ms-2">5</span>
+                        </div>
+                    </div>
+                    <div id="songDetailContent" class="song-content">
+                        <!-- Conteúdo da cifra -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="btn-group me-auto">
+                        <button class="btn btn-outline-primary" id="btnTransposeDown">
+                            <i class="fas fa-arrow-down"></i> Tom
+                        </button>
+                        <button class="btn btn-outline-primary" id="btnOriginalKey">
+                            Tom Original
+                        </button>
+                        <button class="btn btn-outline-primary" id="btnTransposeUp">
+                            <i class="fas fa-arrow-up"></i> Tom
+                        </button>
+                    </div>
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-plus"></i> Adicionar à Lista
+                        </button>
+                        <ul class="dropdown-menu" id="addToPlaylistDropdown">
+                            <!-- Listas serão adicionadas aqui -->
+                        </ul>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar/editar música -->
+    <div class="modal fade" id="addSongModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSongModalLabel">Adicionar Nova Música</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newSongForm">
+                        <div class="mb-3">
+                            <label for="songTitle" class="form-label">Título da Música *</label>
+                            <input type="text" class="form-control" id="songTitle" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="songCategory" class="form-label">Categoria</label>
+                                <input type="text" class="form-control" id="songCategory" placeholder="Ex: Missa > Entrada">
+                                <small class="form-text text-muted">Dica: use o formato "Celebração > Momento"</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="songKey" class="form-label">Tom Principal</label>
+                                <div class="input-group">
+                                    <select class="form-select" id="songKey">
+                                        <option value="">Selecione o tom</option>
+                                        <option value="C">C (Dó)</option>
+                                        <option value="C#">C# (Dó#)</option>
+                                        <option value="D">D (Ré)</option>
+                                        <option value="D#">D# (Ré#)</option>
+                                        <option value="E">E (Mi)</option>
+                                        <option value="F">F (Fá)</option>
+                                        <option value="F#">F# (Fá#)</option>
+                                        <option value="G">G (Sol)</option>
+                                        <option value="G#">G# (Sol#)</option>
+                                        <option value="A">A (Lá)</option>
+                                        <option value="A#">A# (Lá#)</option>
+                                        <option value="B">B (Si)</option>
+                                    </select>
+                                    <span class="input-group-text">Capo:</span>
+                                    <select class="form-select" id="songCapo">
+                                        <option value="0">Sem capo</option>
+                                        <option value="1">1ª casa</option>
+                                        <option value="2">2ª casa</option>
+                                        <option value="3">3ª casa</option>
+                                        <option value="4">4ª casa</option>
+                                        <option value="5">5ª casa</option>
+                                        <option value="6">6ª casa</option>
+                                        <option value="7">7ª casa</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="songCifraClub" class="form-label">Link para Cifra Club</label>
+                                <div class="input-group">
+                                    <input type="url" class="form-control" id="songCifraClub" placeholder="https://www.cifraclub.com.br/...">
+                                    <button class="btn btn-outline-primary" type="button" id="btnImportCifra">Importar</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="songLetra" class="form-label">Link para Letra</label>
+                                <input type="url" class="form-control" id="songLetra" placeholder="https://www.letras.mus.br/...">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="songContent" class="form-label">Conteúdo da Cifra</label>
+                            <textarea class="form-control" id="songContent" rows="12" placeholder="Cole aqui a cifra formatada com acordes e letra"></textarea>
+                            <small class="form-text text-muted">Dica: Use <b>[Intro]</b>, <b>[Verso]</b>, <b>[Refrão]</b> para organizar as seções da música. Para acordes, use <b>&lt;b&gt;C&lt;/b&gt;</b> para destacá-los.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="songNotes" class="form-label">Observações (opcional)</label>
+                            <textarea class="form-control" id="songNotes" rows="2" placeholder="Ex: Afinação especial, dicas para execução, etc."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="isPublicSong">
+                            <label class="form-check-label" for="isPublicSong">Compartilhar esta cifra publicamente</label>
+                            <small class="form-text text-muted d-block">Marque esta opção para disponibilizar a cifra para todos os usuários.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveNewSong">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para criar/editar lista -->
+    <div class="modal fade" id="playlistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="playlistModalLabel">Nova Lista</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="playlistForm">
+                        <div class="mb-3">
+                            <label for="playlistName" class="form-label">Nome da Lista *</label>
+                            <input type="text" class="form-control" id="playlistName" required placeholder="Ex: Lual 2025">
+                        </div>
+                        <div class="mb-3">
+                            <label for="playlistDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="playlistDescription" rows="3" placeholder="Ex: Lista de músicas para o Lual de 2025"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="isPublicPlaylist">
+                            <label class="form-check-label" for="isPublicPlaylist">Lista Pública</label>
+                            <small class="form-text text-muted d-block">Marque esta opção para compartilhar esta lista com todos os usuários.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSavePlaylist">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de login/conta -->
+    <div class="modal fade" id="accountModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="accountModalLabel">Entrar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="loginForm" class="d-block">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="loginEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="loginPassword">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" id="btnLogin">Entrar</button>
+                            <button type="button" class="btn btn-outline-primary" id="btnShowRegister">
+                                Criar uma conta
+                            </button>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-danger" id="btnLoginWithGoogle">
+                                <i class="fab fa-google me-2"></i> Entrar com Google
+                            </button>
+                        </div>
+                    </div>
+                    <div id="registerForm" class="d-none">
+                        <div class="mb-3">
+                            <label for="registerName" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="registerName">
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="registerEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="registerPassword">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" id="btnRegister">Criar Conta</button>
+                            <button type="button" class="btn btn-outline-primary" id="btnShowLogin">
+                                Já tenho uma conta
+                            </button>
+                        </div>
+                    </div>
+                    <div id="userProfileSection" class="d-none">
+                        <div class="text-center mb-4">
+                            <div class="user-avatar mb-3">
+                                <i class="fas fa-user-circle fa-5x"></i>
+                            </div>
+                            <h4 id="profileUserName">Nome do Usuário</h4>
+                            <p id="profileUserEmail" class="text-muted">usuario@exemplo.com</p>
+                            <div id="adminBadge" class="d-none">
+                                <span class="badge bg-danger">Administrador</span>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-danger" id="btnLogout">Sair da Conta</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para importação JSON -->
+    <div class="modal fade" id="importJsonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Importar Músicas (JSON)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="jsonInput" class="form-label">Cole o JSON das músicas abaixo:</label>
+                        <textarea class="form-control" id="jsonInput" rows="10" placeholder='[{"title": "Nome da música", "key": "C", "capo": 0, "category": "Categoria", "content": "Conteúdo da cifra"}]'></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isPublicImport" checked>
+                        <label class="form-check-label" for="isPublicImport">Compartilhar estas cifras publicamente</label>
+                    </div>
+                    <div class="alert alert-info">
+                        <strong>Formato esperado:</strong> Um array de objetos com as propriedades: title (obrigatório),
+                        key, capo, category, content (obrigatório), cifraClubLink, letraLink, notes
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnImportJson">Importar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para exportar músicas -->
+    <div class="modal fade" id="exportSongsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Exportar Músicas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Filtrar músicas para exportação:</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="exportFilter" id="exportAllSongs" value="all" checked>
+                            <label class="form-check-label" for="exportAllSongs">
+                                Todas as músicas
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="exportFilter" id="exportPublicSongs" value="public">
+                            <label class="form-check-label" for="exportPublicSongs">
+                                Apenas músicas públicas
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exportFilter" id="exportMySongs" value="mine">
+                            <label class="form-check-label" for="exportMySongs">
+                                Apenas minhas músicas
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exportJsonOutput" class="form-label">JSON das músicas:</label>
+                        <textarea class="form-control" id="exportJsonOutput" rows="10" readonly></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-success" id="btnCopyJson">
+                            <i class="fas fa-copy me-2"></i> Copiar para a Área de Transferência
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnDownloadJson">
+                        <i class="fas fa-download me-2"></i> Baixar arquivo JSON
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer mt-5 py-3">
+    <div class="container text-center">
+        <p>© 2024 Ministério de Música Filhos de Maria | Feito com <i class="fas fa-heart text-danger"></i></p>
+    </div>
+</footer>
+
+<!-- Toasts para notificações -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <!-- Toast para sucesso -->
+    <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Sucesso</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operação realizada com sucesso!
+        </div>
+    </div>
+    <!-- Toast para erro -->
+    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong class="me-auto">Erro</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        </div>
+        <div class="toast-body" id="errorToastMessage">
+            Ocorreu um erro!
+        </div>
+    </div>
+    <!-- Toast para offline -->
+    <div id="offlineToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-warning text-dark">
+            <i class="fas fa-wifi me-2"></i>
+            <strong class="me-auto">Acesso Offline</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        </div>
+        <div class="toast-body">
+            Você está usando o app no modo offline. Algumas funcionalidades podem estar limitadas.
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="cifras.js"></script>
+<script src="auth.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
